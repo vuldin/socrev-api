@@ -1,0 +1,29 @@
+{
+  "name": "socrev-api",
+  "version": "1.0.0",
+  "description": "Provide API for socialistrevolution.org",
+  "main": "server",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/marxist/socialistrevolution.org-api.git"
+  },
+  "author": "Joshua Purcell <joshua.purcell@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/marxist/socialistrevolution.org-api/issues"
+  },
+  "homepage": "https://gitlab.com/marxist/socialistrevolution.org-api#README",
+  "dependencies": {
+    "cors": "^2.8.3",
+    "dotenv": "^4.0.0",
+    "express": "^4.15.3",
+    "express-jwt": "^5.3.0",
+    "express-jwt-authz": "^1.0.0",
+    "jwks-rsa": "^1.1.1",
+    "morgan": "^1.8.2",
+    "superagent": "^3.5.2"
+  }
+}

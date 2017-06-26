@@ -17,12 +17,15 @@
   },
   "homepage": "https://gitlab.com/marxist/socialistrevolution.org-api#README",
   "dependencies": {
+    "aws-sdk": "^2.77.0",
     "body-parser": "^1.17.2",
     "cors": "^2.8.3",
     "dotenv": "^4.0.0",
+    "dynamodb-data-types": "^3.0.0",
     "express": "^4.15.3",
     "express-jwt": "^5.3.0",
     "express-jwt-authz": "^1.0.0",
+    "jsdom": "^11.0.0",
     "jwks-rsa": "^1.1.1",
     "morgan": "^1.8.2",
     "superagent": "^3.5.2"

@@ -2,10 +2,13 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 module.exports = {
-  cdnUrl: process.env.CDN_URL,
+  defaultPort: process.env.DEFAULT_PORT,
+  cdnApiUrl: process.env.CDN_API_URL,
   cdnKey: process.env.CDN_KEY,
-  audience: process.env.AUDIENCE,
-  authName: process.env.AUTHNAME,
-  wpUrl: process.env.WP_URL,
-  defaultPort: process.env.DEFAULT_PORT
+  authAudience: process.env.AUTH_AUDIENCE,
+  authName: process.env.AUTH_NAME,
+  cmsApiUrl: process.env.CMS_API_URL,
+  awsKey: process.env.AWS_KEY,
+  awsSecret: process.env.AWS_SECRET,
+  awsRegion: process.env.AWS_REGION
 }

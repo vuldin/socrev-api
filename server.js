@@ -11,7 +11,7 @@ const mediaModule = require('./src/media')
 const cmsModule = require('./src/cms')
 const store = require('./src/store')
 
-const { audience, authName, defaultPort } = store
+const { authAudience, authName, defaultPort } = store
 
 const port = process.env.PORT || defaultPort
 app.use(cors())
@@ -29,7 +29,7 @@ const checkJwt = jwt({
     jwksRequestsPerMinute: 5,
     jwksUri: `https://${authName}.auth0.com/.well-known/jwks.json`
   }),
-  audience: audience,
+  audience: authAudience,
   issuer: `https://${authName}.auth0.com/`,
   algorithms: ['RS256']
 })

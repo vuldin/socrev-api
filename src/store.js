@@ -8,6 +8,8 @@ module.exports = {
   authAudience: process.env.AUTH_AUDIENCE,
   authName: process.env.AUTH_NAME,
   cmsApiUrl: process.env.CMS_API_URL,
+  cmsApiUser: process.env.CMS_API_USER,
+  cmsApiPassword: process.env.CMS_API_PASSWORD,
   awsKey: process.env.AWS_KEY,
   awsSecret: process.env.AWS_SECRET,
   awsRegion: process.env.AWS_REGION

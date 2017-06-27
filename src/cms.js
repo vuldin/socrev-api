@@ -1,12 +1,19 @@
+const WPAPI = require('wpapi')
 const request = require('superagent')
 const attr = require('dynamodb-data-types').AttributeValue
 const { JSDOM } = require('jsdom')
 const store = require('./store')
 const { dynamodb } = require('./aws')
 
-const { cmsApiUrl } = store
+const { cmsApiUrl, cmsApiUser, cmsApiPassword } = store
 const tableName = 'posts'
 let waitForTableCreation = 0 // amount of time to wait after creating table before migrating wp posts
+let wp = new WPAPI({
+  endpoint: cmsApiUrl,
+  username: cmsApiUser,
+  password: cmsApiPassword,
+  auth: true
+})
 
 // create posts table if it doesn't exist
 const initTable = async () => {
@@ -41,19 +48,18 @@ const migratePosts = async () => {
     wpPostsRes,
     mediaRes,
     dynamoPostsRes,
-    wpCategoriesRes
+    wpCategories
   ] = await Promise.all([
-    request.get(`${cmsApiUrl}/posts`),
+    wp.posts(),
     dynamodb.scan({ TableName: 'media' }).promise(),
     dynamodb.scan({ TableName: 'posts' }).promise(),
-    request.get(`${cmsApiUrl}/categories`)
+    wp.categories()
   ])
-  let wpPosts = JSON.parse(wpPostsRes.text)
+  let wpPosts = wpPostsRes
   let media = mediaRes.Items.map(item => attr.unwrap(item))
   let oldDynamoPosts = dynamoPostsRes.Items.map(item => attr.unwrap(item))
 
   // categories
-  let wpCategories = JSON.parse(wpCategoriesRes.text)
   let featureCatId = wpCategories.filter(c => c.name === 'Feature')
   if (featureCatId.length > 0) featureCatId = featureCatId[0].id
 
@@ -213,6 +219,7 @@ const migratePosts = async () => {
 
 // calls initTable and migratePosts synchronously
 let init = async () => {
+  //await wpInit()
   await initTable()
   setTimeout(async () => {
     await migratePosts()

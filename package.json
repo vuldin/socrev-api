@@ -4,7 +4,7 @@
   "description": "Provide API for socialistrevolution.org",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node --harmony server.js"
   },
   "repository": {
     "type": "git",

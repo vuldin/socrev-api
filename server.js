@@ -12,8 +12,13 @@ const cmsModule = require('./src/cms')
 const store = require('./src/store')
 
 const { authAudience, authName, defaultPort } = store
-
 const port = process.env.PORT || defaultPort
+
+process.on('unhandledRejection', (reason, p) => {
+  console.log('unhandled rejection at:', p)
+  console.log('reason:', reason)
+})
+
 app.use(cors())
 app.use(bodyParser.json())
 app.use(
@@ -40,4 +45,6 @@ const checkScopes = authz(['read:posts'])
 mediaModule(app, checkJwt, checkScopes)
 cmsModule(app, checkJwt, checkScopes)
 
-app.listen(port, () => console.log(`listening on ${port}`))
+const server = app.listen(port, () =>
+  console.log(`listening on ${server.address().port}`)
+)

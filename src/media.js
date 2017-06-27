@@ -8,7 +8,7 @@ const tableName = 'media'
 
 // list tables, then create media table if it doesn't exist
 dynamodb.listTables({}, (err, data) => {
-  if (!(data.TableNames.indexOf(tableName) > -1)) {
+  if (!data.TableNames.includes(tableName)) {
     const params = {
       TableName: tableName,
       KeySchema: [
@@ -66,7 +66,8 @@ module.exports = (app, checkJwt, checkScopes) => {
       with_mini_preview: true
     })
     const cdnResJson = JSON.parse(cdnRes.text)
-    const mediaObj = Object.assign({}, cdnResJson.response, req.body)
+    const mediaObj = { ...cdnResJson.response, ...req.body }
+    console.log(mediaObj)
 
     const dynamoMediaObj = attr.wrap(mediaObj)
     const dynamoParams = {

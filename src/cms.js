@@ -11,7 +11,7 @@ let waitForTableCreation = 0 // amount of time to wait after creating table befo
 // create posts table if it doesn't exist
 const initTable = async () => {
   const data = await dynamodb.listTables({}).promise()
-  if (!(data.TableNames.indexOf(tableName) > -1)) {
+  if (!data.TableNames.includes(tableName)) {
     // create table
     waitForTableCreation = 10 * 1000 // wait for 10 seconds once table is created to migrate posts
     const params = {
@@ -92,7 +92,7 @@ const migratePosts = async () => {
           const imgDom = dom.window.document.querySelector('img')
           const url = imgDom.src
           let mediaObj = {}
-          if (url.indexOf('marx.imageresizer.io') > -1) {
+          if (url.includes('marx.imageresizer.io')) {
             // image is from CDN
             let mId = url.split('/')[3].replace(/\..*/g, '')
             mediaObj = media.filter(m => m.id === mId)[0]
@@ -121,7 +121,7 @@ const migratePosts = async () => {
     // merge with existing dynamo post if exists
     const dynamoMatches = oldDynamoPosts.filter(p => p.id === wp.id)
     if (dynamoMatches.length > 0) {
-      result = Object.assign({}, dynamoMatches[0], result)
+      result = { ...dynamoMatches[0], ...result }
     }
     /*
     console.log()
@@ -134,8 +134,8 @@ const migratePosts = async () => {
       // search for featured image in media
       media.forEach(m => {
         if (m.featureFor !== undefined) {
-          if (m.featureFor.indexOf(result.id) > -1) {
-            // this media is the feature for this post
+          if (m.featureFor.includes(result.id)) {
+            // found feature for post in media
             result.featuredImage = m
           }
         }
@@ -145,7 +145,10 @@ const migratePosts = async () => {
         let images = result.content
           .filter(e => typeof e !== 'string')
           .filter(e => e.type === 'image')
-        if (images.length > 0) result.featuredImage = images[0]
+        if (images.length > 0) {
+          // found feature for post in contents
+          result.featuredImage = images[0].val
+        }
       }
     }
 

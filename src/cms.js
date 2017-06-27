@@ -35,7 +35,7 @@ const initTable = async () => {
 
 // pulls posts from wordpress, transforms, then push to dynamoDB
 const migratePosts = async () => {
-  console.log('migratePosts start')
+  //console.log('migratePosts start')
   // pull wordpress posts, dynamo posts, and media
   const [
     wpPostsRes,
@@ -57,10 +57,33 @@ const migratePosts = async () => {
   let featureCatId = wpCategories.filter(c => c.name === 'Feature')
   if (featureCatId.length > 0) featureCatId = featureCatId[0].id
 
+  // filter out wpPosts which have not been modified since last merge
+  let newWpPostCount = 0
+  let modWpPostCount = 0
+  wpPosts = wpPosts.filter(wp => {
+    let result = true
+    // if post is found in dynamo, then filter based on modified date
+    if (oldDynamoPosts.filter(dp => dp.id === wp.id).length > 0) {
+      //console.log(`in dynamo: ${wp.slug}`)
+      result =
+        oldDynamoPosts.filter(
+          dp => dp.id === wp.id && dp.modified !== wp.modified
+        ).length > 0
+      if (result) modWpPostCount++
+      //console.log(`  ${result}`)
+    } else {
+      newWpPostCount++
+      //console.log(`new: ${wp.slug}`)
+      //console.log(`  ${result}`)
+    }
+    return result
+  })
+  console.log('post updates since last merge:')
+  console.log(`  ${modWpPostCount} modified`)
+  console.log(`  ${newWpPostCount} created`)
+
   // create a dynamo post for each wp post
   let posts = wpPosts.map(wp => {
-    const date_created = new Date(wp.date).getTime()
-    const date_modified = new Date(wp.modified).getTime()
     let isFeatured = false
     const catMatches = wp.categories.filter(c => c === featureCatId)
     if (catMatches.length > 0) isFeatured = true
@@ -76,8 +99,8 @@ const migratePosts = async () => {
       status: wp.status,
       title: wp.title.rendered,
       isFeatured: isFeatured,
-      date_created: date_created,
-      date_modified: date_modified,
+      date: wp.date,
+      modified: wp.modified,
       content: wp.content_rawmod.map(entry => {
         let result = entry
         if (entry.substring(0, 8) === '[caption') {
@@ -111,6 +134,8 @@ const migratePosts = async () => {
         return result
       })
     }
+    // grab first string content entry for excerpt
+    // TODO handle other entry types (ie. em, h2)
     result.excerpt = result.content.filter(e => typeof e === 'string')[0]
     /*
     console.log()
@@ -160,28 +185,30 @@ const migratePosts = async () => {
   console.log(posts)
   */
 
-  // add posts to dynamo
-  const dynamoResult = await dynamodb
-    .batchWriteItem({
-      RequestItems: {
-        posts: posts.map(p => {
-          return {
-            PutRequest: {
-              Item: p
+  // add any posts to dynamo
+  if (posts.length > 0) {
+    const dynamoResult = await dynamodb
+      .batchWriteItem({
+        RequestItems: {
+          posts: posts.map(p => {
+            return {
+              PutRequest: {
+                Item: p
+              }
             }
-          }
-        })
-      },
-      ReturnConsumedCapacity: 'TOTAL',
-      ReturnItemCollectionMetrics: 'SIZE'
-    })
-    .promise()
+          })
+        },
+        ReturnConsumedCapacity: 'TOTAL',
+        ReturnItemCollectionMetrics: 'SIZE'
+      })
+      .promise()
+  } else console.log('no dynamo updates')
   /*
   console.log()
   console.log('dynamo result')
   console.log(dynamoResult)
   */
-  console.log('migratePosts complete')
+  //console.log('migratePosts complete')
 }
 
 // calls initTable and migratePosts synchronously

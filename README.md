@@ -23,3 +23,15 @@ You will see a ResourceInUseException error printed to the console on subsequent
   - AmazonAPIGatewayInvokeFullAccess
   - AmazonDynamoDBFullAccess
 - add access key, secret key, and region (ie. `us-west-2`) to appropriate environment variable in .env
+
+## Content
+Content is the main part of a post.
+Content comes from wordpress in the form of an array, with each entry being a paragraph (block).
+Entries can be of various types:
+type | example
+--- | ---
+paragraph | `any string`
+image | `{ type: 'image', val: [Object]}`
+
+Each paragraph string is checked for markup.
+If found, then that line is rendered as HTML.

@@ -28,7 +28,12 @@
     "jsdom": "^11.0.0",
     "jwks-rsa": "^1.1.1",
     "morgan": "^1.8.2",
+    "parse5": "^3.0.2",
     "superagent": "^3.5.2",
+    "validator": "^7.2.0",
     "wpapi": "^1.1.1"
+  },
+  "devDependencies": {
+    "circular-json": "^0.3.1"
   }
 }

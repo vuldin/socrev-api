@@ -7,7 +7,7 @@ const jwks = require('jwks-rsa')
 const cors = require('cors')
 const request = require('superagent')
 const morgan = require('morgan')
-const mediaModule = require('./src/media')
+//const mediaModule = require('./src/media')
 const cmsModule = require('./src/cms')
 const store = require('./src/store')
 
@@ -42,7 +42,7 @@ const checkJwt = jwt({
 // TODO handle passing in scope as argument on input methods below
 const checkScopes = authz(['read:posts'])
 
-mediaModule(app, checkJwt, checkScopes)
+//mediaModule(app, checkJwt, checkScopes)
 cmsModule(app, checkJwt, checkScopes)
 
 const server = app.listen(port, () =>

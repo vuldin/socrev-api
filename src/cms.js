@@ -39,7 +39,7 @@ module.exports = (app, checkJwt, checkScopes) => {
           wp.posts().sticky(true),
           wp.posts().page(page).perPage(12)
         ])
-        posts.unshift(sticky)
+        posts.unshift(sticky[0])
         res.json(posts)
       } catch (e) {
         res.status(404).send('error from wordpress')

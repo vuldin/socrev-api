@@ -3,23 +3,26 @@ const request = require('superagent')
 const { JSDOM } = require('jsdom')
 const mcache = require('memory-cache')
 const CircularJSON = require('circular-json')
+const parse5 = require('parse5')
 const store = require('./store')
 
 const { cmsApiUrl, cmsApiUser, cmsApiPassword } = store
-const cachelife = undefined //1000 * 60 * 20 // 20 min cache
+//const cachelife = 1000 * 60 * 20 // 20 min
+//const cachelife = 1 // none
+const cachelife = 0 // unlimited
 const cache = duration => {
   return (req, res, next) => {
     let url = req.url
     let originalUrl = req.originalUrl
+    let id = parseInt(req.params.id)
     let allowSet = true
     let key = '__express__' + originalUrl || url
-    if (req.url.match(/\/posts\/[0-9]*$/g)) {
+    if (url.match(/\/posts\/[0-9]*$/g)) {
       allowSet = false
       key = '__express__/posts'
     }
     let cachedBody = mcache.get(key)
     if (cachedBody) {
-      let id = parseInt(req.params.id)
       if (id) {
         res.json(cachedBody.find(d => d.id === id))
       } else res.json(cachedBody)
@@ -53,25 +56,41 @@ module.exports = (app, checkJwt, checkScopes) => {
           wp.posts().sticky(false).page(page).perPage(12)
         ])
         posts.unshift(sticky[0])
-        // retrieve featured media if it exists
-        // otherwise use the first image in content
         let fmids = Array.from(posts, p => p.featured_media)
-        console.log(fmids)
+        //console.log(new Date().getTime(), fmids)
         //let m = await wp.media().id(3255)
-        //console.log(m)
-        /*
-        fmids.forEach(async id => {
-          let m = await wp.media().id(fmids.shift())
-          console.log(m)
+        let getMedia = async (mid, i, resolve) => {
+          if (mid !== 0) {
+            //posts[i].featuredMedia = await wp.media().id(mid)
+            let media = await wp.media().id(mid)
+            posts[i].featuredMedia = media
+          } else {
+            // pull media from content
+            let handleNodes = node => {
+              if (node.nodeName === 'img') {
+                posts[i].featuredMedia = {
+                  source_url: node.attrs.find(a => a.name === 'src').value
+                }
+              } else {
+                if (
+                  node.childNodes !== undefined &&
+                  node.childNodes.length > 0
+                ) {
+                  node.childNodes.forEach(c => handleNodes(c))
+                }
+              }
+            }
+            let node = parse5.parseFragment(posts[i].content.rendered)
+            handleNodes(node)
+          }
+          resolve()
+        }
+        let requests = fmids.map((mid, i) => {
+          return new Promise(resolve => {
+            getMedia(mid, i, resolve)
+          })
         })
-        */
-        /*
-        let fmedia = await fmids.map(async mid => {
-          let m = await wp.media().id(mid)
-          return m
-        })
-        console.log(fmedia)
-        */
+        await Promise.all(requests)
         res.json(posts)
       } catch (e) {
         res.status(404).send('error from wordpress')

@@ -17,6 +17,7 @@
   },
   "homepage": "https://gitlab.com/marxist/socialistrevolution.org-api#README",
   "dependencies": {
+    "async": "^2.5.0",
     "aws-sdk": "^2.77.0",
     "body-parser": "^1.17.2",
     "cors": "^2.8.3",

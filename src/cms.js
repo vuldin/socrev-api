@@ -50,10 +50,13 @@ module.exports = (app, checkJwt, checkScopes) => {
     })
     app.get('/posts', cache(cachelife), async (req, res) => {
       let page = req.query.page
+      console.log(`page ${page}, ${typeof page}`)
       try {
         let [sticky, posts] = await Promise.all([
           wp.posts().sticky(true),
-          wp.posts().sticky(false).page(page).perPage(12)
+          page !== undefined
+            ? wp.posts().sticky(false).page(+page).perPage(12)
+            : wp.posts().sticky(false).perPage(12)
         ])
         posts.unshift(sticky[0])
         //let fmids = Array.from(posts, p => p.featured_media)
@@ -156,6 +159,7 @@ module.exports = (app, checkJwt, checkScopes) => {
     app.get('/posts/:slug', cache(cachelife), async (req, res) => {
       try {
         let post = await wp.posts().slug(req.params.slug)
+        post = post[0]
         res.json(post)
       } catch (e) {
         res.status(404).send('error from wordpress')

@@ -50,15 +50,20 @@ module.exports = (app, checkJwt, checkScopes) => {
     })
     app.get('/posts', cache(cachelife), async (req, res) => {
       let page = req.query.page
-      console.log(`page ${page}, ${typeof page}`)
       try {
-        let [sticky, posts] = await Promise.all([
-          wp.posts().sticky(true),
-          page !== undefined
-            ? wp.posts().sticky(false).page(+page).perPage(12)
-            : wp.posts().sticky(false).perPage(12)
-        ])
-        posts.unshift(sticky[0])
+        let post = []
+        let sticky = []
+        if (page) {
+          posts = await wp.posts().sticky(false).page(+page).perPage(12)
+        } else {
+          let [stickyres, postsres] = await Promise.all([
+            wp.posts().sticky(true),
+            wp.posts().sticky(false).perPage(12)
+          ])
+          sticky = stickyres
+          posts = postsres
+          posts.unshift(sticky[0])
+        }
         //let fmids = Array.from(posts, p => p.featured_media)
         //console.log(new Date().getTime(), fmids)
         //let m = await wp.media().id(3255)

@@ -9,9 +9,9 @@ const request = require('superagent')
 const morgan = require('morgan')
 //const mediaModule = require('./src/media')
 const cmsModule = require('./src/cms')
-const store = require('./src/store')
+const constants = require('./src/constants')
 
-const { authAudience, authName, defaultPort } = store
+const { authAudience, authName, defaultPort } = constants
 const port = process.env.PORT || defaultPort
 
 process.on('unhandledRejection', (reason, p) => {

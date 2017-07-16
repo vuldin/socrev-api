@@ -64,13 +64,11 @@ module.exports = (app, checkJwt, checkScopes) => {
         )
         posts = await Promise.all(handleNoFeatureRequests)
 
-        /*
-        // remove feature images from content
+        // remove repeated images from content
         const removeRepeatImageRequests = posts.map(
           p => new Promise(resolve => postMod.removeRepeatImage(p, resolve))
         )
         posts = await Promise.all(removeRepeatImageRequests)
-        */
 
         res.json(posts)
       } catch (e) {

@@ -97,7 +97,6 @@ module.exports = {
     resolve(post)
   },
   removeRepeatImage: async (post, resolve) => {
-    /*
     const node = parse5.parseFragment(post.content.rendered)
     const loop = node => {
       let handled = false
@@ -105,12 +104,18 @@ module.exports = {
         handled = true
         const imgNode = node.childNodes.find(d => d.nodeName === 'img')
         const url = imgNode.attrs.find(a => a.name == 'src').value
-        return parse5.parseFragment(figure(url)).childNodes[0]
+        let result
+        if (url === post.featured_media.source_url) result = '<span/>'
+        else result = node
+        return result
       }
       if (node.nodeName === 'img' && node.parentNode.nodeName !== 'figure') {
         handled = true
         const url = node.attrs.find(a => a.name == 'src').value
-        return parse5.parseFragment(figure(url)).childNodes[0]
+        let result
+        if (url === post.featured_media.source_url) result = '<span/>'
+        else result = node
+        return result
       }
       if (node.childNodes !== undefined && node.childNodes.length > 0) {
         node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
@@ -122,7 +127,6 @@ module.exports = {
     }
     node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
     post.content.rendered = parse5.serialize(node)
-    */
     resolve(post)
   }
 }

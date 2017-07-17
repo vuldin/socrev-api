@@ -105,16 +105,18 @@ module.exports = {
         const imgNode = node.childNodes.find(d => d.nodeName === 'img')
         const url = imgNode.attrs.find(a => a.name == 'src').value
         let result
-        if (url === post.featured_media.source_url) result = '<span/>'
-        else result = node
+        if (url === post.featured_media.source_url) {
+          result = '<span/>'
+        } else result = node
         return result
       }
       if (node.nodeName === 'img' && node.parentNode.nodeName !== 'figure') {
         handled = true
         const url = node.attrs.find(a => a.name == 'src').value
         let result
-        if (url === post.featured_media.source_url) result = '<span/>'
-        else result = node
+        if (url === post.featured_media.source_url) {
+          result = '<span/>'
+        } else result = node
         return result
       }
       if (node.childNodes !== undefined && node.childNodes.length > 0) {

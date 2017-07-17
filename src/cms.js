@@ -77,6 +77,12 @@ module.exports = (app, checkJwt, checkScopes) => {
         )
         posts = await Promise.all(removeExcerptImageRequests)
 
+        // remove markup from excerpt
+        const removeExcerptMarkupRequests = posts.map(
+          p => new Promise(resolve => postMod.removeExcerptMarkup(p, resolve))
+        )
+        posts = await Promise.all(removeExcerptMarkupRequests)
+
         res.json(posts)
       } catch (e) {
         res.status(404).send('error from wordpress')

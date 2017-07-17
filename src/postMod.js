@@ -150,5 +150,15 @@ module.exports = {
     node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
     post.excerpt.rendered = parse5.serialize(node)
     resolve(post)
+  },
+  removeExcerptMarkup: async (post, resolve) => {
+    let node = parse5.parseFragment(post.excerpt.rendered)
+    //post.excerpt.rendered = node.childNodes[0].childNodes[0].value
+    if (node.childNodes !== undefined && node.childNodes.length > 0)
+      node = node.childNodes[0]
+    if (node.childNodes !== undefined && node.childNodes.length > 0)
+      node = node.childNodes[0]
+    if (node.value !== undefined) post.excerpt.rendered = node.value
+    resolve(post)
   }
 }

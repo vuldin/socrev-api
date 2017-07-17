@@ -130,5 +130,25 @@ module.exports = {
     node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
     post.content.rendered = parse5.serialize(node)
     resolve(post)
+  },
+  removeExcerptImage: async (post, resolve) => {
+    const node = parse5.parseFragment(post.excerpt.rendered)
+    const loop = node => {
+      let handled = false
+      if (node.nodeName === 'figure' || node.nodeName === 'img') {
+        handled = true
+        return '<span/>'
+      }
+      if (node.childNodes !== undefined && node.childNodes.length > 0) {
+        node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
+      }
+      if (!handled) {
+        // neither figure nor img, return as-is
+        return node
+      }
+    }
+    node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
+    post.excerpt.rendered = parse5.serialize(node)
+    resolve(post)
   }
 }

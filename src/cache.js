@@ -1,5 +1,7 @@
 const mcache = require('memory-cache')
 
+let pageKeys = []
+
 module.exports = {
   cache: duration => {
     return (req, res, next) => {
@@ -15,10 +17,22 @@ module.exports = {
         allowSet = false
         key = '__express__/posts'
       }
-      let cachedBody = mcache.get(key)
+      if (url === '/posts') {
+        // change key for /posts to /posts?page=1
+        key = '__express__/posts?page=1'
+      }
+      if (key.includes('__express__/posts?page=')) {
+        // is page request, add key to pageKeys
+        pageKeys.push(key)
+      }
+      let cachedBody = []
+      if (key === '__express__/posts') {
+        pageKeys.forEach(k => (cachedBody = cachedBody.concat(mcache.get(k))))
+      } else cachedBody = mcache.get(key)
       if (cachedBody) {
         if (slug) {
-          res.json(cachedBody.find(d => d.slug === slug))
+          const post = cachedBody.find(d => d.slug === slug)
+          res.json(post)
         } else res.json(cachedBody)
         return
       } else {

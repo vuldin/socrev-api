@@ -11,7 +11,8 @@ const { cmsApiUrl, cmsApiUser, cmsApiPassword } = constants
 const cachelife = 0 // unlimited
 
 module.exports = (app, checkJwt, checkScopes) => {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  // allow self-signed certificate on wordpress site
+  //process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   WPAPI.discover(cmsApiUrl).then(wp => {
     wp.auth({
       username: cmsApiUser,
@@ -69,6 +70,12 @@ module.exports = (app, checkJwt, checkScopes) => {
           p => new Promise(resolve => postMod.removeRepeatImage(p, resolve))
         )
         posts = await Promise.all(removeRepeatImageRequests)
+
+        // remove images from excerpt
+        const removeExcerptImageRequests = posts.map(
+          p => new Promise(resolve => postMod.removeExcerptImage(p, resolve))
+        )
+        posts = await Promise.all(removeExcerptImageRequests)
 
         res.json(posts)
       } catch (e) {

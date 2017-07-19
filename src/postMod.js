@@ -95,16 +95,18 @@ module.exports = {
       }
       let imgs = []
       loop(node, imgs)
-      let media = {
-        source_url: imgs[0]
-      }
-      // TODO handle other video sources and check for video extension
-      if (imgs[0].includes('youtube'))
-        media = {
-          video: true,
+      if (imgs.length > 0) {
+        let media = {
           source_url: imgs[0]
         }
-      post.featured_media = media
+        // TODO handle other video sources and check for video extension
+        if (imgs[0].includes('youtube'))
+          media = {
+            video: true,
+            source_url: imgs[0]
+          }
+        post.featured_media = media
+      }
     }
     resolve(post)
   },

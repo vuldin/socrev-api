@@ -66,6 +66,11 @@ module.exports = {
     if (post.featured_media === 0) {
       const node = parse5.parseFragment(post.content.rendered)
       const loop = (node, arr) => {
+        if (node.nodeName === 'iframe') {
+          //if (post.slug === 'new-site') console.log(node.nodeName)
+          url = node.attrs.find(a => a.name == 'src').value
+          arr.push(url)
+        }
         if (node.nodeName === 'figure') {
           const imgNode = node.childNodes.find(d => d.nodeName === 'img')
           let url
@@ -90,9 +95,16 @@ module.exports = {
       }
       let imgs = []
       loop(node, imgs)
-      post.featured_media = {
+      let media = {
         source_url: imgs[0]
       }
+      // TODO handle other video sources and check for video extension
+      if (imgs[0].includes('youtube'))
+        media = {
+          video: true,
+          source_url: imgs[0]
+        }
+      post.featured_media = media
     }
     resolve(post)
   },
@@ -100,6 +112,14 @@ module.exports = {
     const node = parse5.parseFragment(post.content.rendered)
     const loop = node => {
       let handled = false
+      if (node.nodeName === 'iframe') {
+        const url = node.attrs.find(a => a.name == 'src').value
+        let result
+        if (url === post.featured_media.source_url) {
+          result = '<span/>'
+        } else result = node
+        return result
+      }
       if (node.nodeName === 'figure') {
         handled = true
         const imgNode = node.childNodes.find(d => d.nodeName === 'img')

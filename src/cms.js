@@ -29,11 +29,13 @@ module.exports = (app, checkJwt, checkScopes) => {
         } else {
           let [stickyres, postsres] = await Promise.all([
             wp.posts().sticky(true),
-            wp.posts().sticky(false).perPage(12)
+            wp.posts().perPage(12)
           ])
           sticky = stickyres
           posts = postsres
-          posts.unshift(sticky[0])
+          const feature = sticky[0]
+          posts = posts.filter(p => p.id !== feature.id)
+          posts.unshift(feature)
         }
 
         // replace featured_media id with url

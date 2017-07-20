@@ -25,11 +25,11 @@ module.exports = (app, checkJwt, checkScopes) => {
         let post = []
         let sticky = []
         if (page) {
-          posts = await wp.posts().sticky(false).page(+page).perPage(12)
+          posts = await wp.posts().perPage(12).offset(1 + 12 * page - 12)
         } else {
           let [stickyres, postsres] = await Promise.all([
             wp.posts().sticky(true),
-            wp.posts().perPage(12)
+            wp.posts().perPage(13)
           ])
           sticky = stickyres
           posts = postsres

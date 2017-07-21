@@ -19,6 +19,16 @@ module.exports = (app, checkJwt, checkScopes) => {
       password: cmsApiPassword,
       auth: true
     })
+    const handlePostMod = async p => {
+      p = await postMod.getFeatureSrc(p, wp)
+      p = await postMod.modFigure(p)
+      //p = await postMod.imgToFigure(p)
+      p = await postMod.handleNoFeature(p)
+      p = await postMod.removeRepeatImage(p)
+      p = await postMod.removeExcerptImage(p)
+      p = await postMod.removeExcerptMarkup(p)
+      return p
+    }
     app.get('/posts', cache.cache(cachelife), async (req, res) => {
       let page = req.query.page
       try {
@@ -38,52 +48,7 @@ module.exports = (app, checkJwt, checkScopes) => {
           posts.unshift(feature)
         }
 
-        // replace featured_media id with url
-        const getFeatureSrcRequests = posts.map(
-          p => new Promise(resolve => postMod.getFeatureSrc(p, wp, resolve))
-        )
-        posts = await Promise.all(getFeatureSrcRequests)
-
-        // some posts have featured_media set to 0
-        // this needs to be changed to first img/figure
-
-        const modFigureRequests = posts.map(
-          p => new Promise(resolve => postMod.modFigure(p, resolve))
-        )
-        posts = await Promise.all(modFigureRequests)
-        /*
-        // first step is changing all images to figures
-        const imgToFigureRequests = posts.map(
-          p => new Promise(resolve => postMod.imgToFigure(p, resolve))
-        )
-        posts = await Promise.all(imgToFigureRequests)
-        */
-
-        // TODO for all paragraphs, pull feature tags from childNodes and insert as sibling
-
-        // handle featured_media that has val of 0
-        const handleNoFeatureRequests = posts.map(
-          p => new Promise(resolve => postMod.handleNoFeature(p, resolve))
-        )
-        posts = await Promise.all(handleNoFeatureRequests)
-
-        // remove repeated images from content
-        const removeRepeatImageRequests = posts.map(
-          p => new Promise(resolve => postMod.removeRepeatImage(p, resolve))
-        )
-        posts = await Promise.all(removeRepeatImageRequests)
-
-        // remove images from excerpt
-        const removeExcerptImageRequests = posts.map(
-          p => new Promise(resolve => postMod.removeExcerptImage(p, resolve))
-        )
-        posts = await Promise.all(removeExcerptImageRequests)
-
-        // remove markup from excerpt
-        const removeExcerptMarkupRequests = posts.map(
-          p => new Promise(resolve => postMod.removeExcerptMarkup(p, resolve))
-        )
-        posts = await Promise.all(removeExcerptMarkupRequests)
+        posts = await Promise.all(posts.map(handlePostMod))
 
         res.json(posts)
       } catch (e) {
@@ -94,11 +59,13 @@ module.exports = (app, checkJwt, checkScopes) => {
       try {
         let post = await wp.posts().slug(req.params.slug)
         post = post[0]
+        post = await handlePostMod(post)
         res.json(post)
       } catch (e) {
         res.status(404).send('error from wordpress')
       }
     })
+    /*
     app.get('/media/:id', cache.cache(cachelife), async (req, res) => {
       try {
         let m = await wp.media().id(req.params.id)
@@ -107,6 +74,7 @@ module.exports = (app, checkJwt, checkScopes) => {
         res.status(404).send('error from wordpress')
       }
     })
+    */
     app.get('/clear', (req, res) => {
       cache.clear()
       res.send('cache cleared')

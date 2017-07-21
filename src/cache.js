@@ -32,7 +32,8 @@ module.exports = {
       if (cachedBody) {
         if (slug) {
           const post = cachedBody.find(d => d.slug === slug)
-          res.json(post)
+          if (post) res.json(post)
+          else next()
         } else res.json(cachedBody)
         return
       } else {

@@ -7,17 +7,18 @@ const figure = url => {
 }
 
 module.exports = {
-  getFeatureSrc: async (post, wp, resolve) => {
+  getFeatureSrc: async (post, wp) => {
     // replace non-zero feature_media id with object containing source_url
     if (post.featured_media > 0) {
       const m = await wp.media().id(post.featured_media)
       post.featured_media = {
-        source_url: m.source_url
+        source_url: m.source_url,
+        media_details: m.media_details
       }
     }
-    resolve(post)
+    return post
   },
-  modFigure: async (post, resolve) => {
+  modFigure: async post => {
     // replace figures with normalized figure
     const node = parse5.parseFragment(post.content.rendered)
     const loop = node => {
@@ -38,9 +39,9 @@ module.exports = {
     }
     node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
     post.content.rendered = parse5.serialize(node)
-    resolve(post)
+    return post
   },
-  imgToFigure: async (post, resolve) => {
+  imgToFigure: async post => {
     // replace img with normalized figure
     const node = parse5.parseFragment(post.content.rendered)
     const loop = node => {
@@ -60,9 +61,9 @@ module.exports = {
     }
     node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
     post.content.rendered = parse5.serialize(node)
-    resolve(post)
+    return post
   },
-  handleNoFeature: async (post, resolve) => {
+  handleNoFeature: async post => {
     if (post.featured_media === 0) {
       const node = parse5.parseFragment(post.content.rendered)
       const loop = (node, arr) => {
@@ -108,9 +109,9 @@ module.exports = {
         post.featured_media = media
       }
     }
-    resolve(post)
+    return post
   },
-  removeRepeatImage: async (post, resolve) => {
+  removeRepeatImage: async post => {
     const node = parse5.parseFragment(post.content.rendered)
     const loop = node => {
       let handled = false
@@ -151,9 +152,9 @@ module.exports = {
     }
     node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
     post.content.rendered = parse5.serialize(node)
-    resolve(post)
+    return post
   },
-  removeExcerptImage: async (post, resolve) => {
+  removeExcerptImage: async post => {
     const node = parse5.parseFragment(post.excerpt.rendered)
     const loop = node => {
       let handled = false
@@ -171,9 +172,9 @@ module.exports = {
     }
     node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
     post.excerpt.rendered = parse5.serialize(node)
-    resolve(post)
+    return post
   },
-  removeExcerptMarkup: async (post, resolve) => {
+  removeExcerptMarkup: async post => {
     let node = parse5.parseFragment(post.excerpt.rendered)
     //post.excerpt.rendered = node.childNodes[0].childNodes[0].value
     if (node.childNodes !== undefined && node.childNodes.length > 0)
@@ -181,6 +182,6 @@ module.exports = {
     if (node.childNodes !== undefined && node.childNodes.length > 0)
       node = node.childNodes[0]
     if (node.value !== undefined) post.excerpt.rendered = node.value
-    resolve(post)
+    return post
   }
 }

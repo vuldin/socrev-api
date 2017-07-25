@@ -13,11 +13,9 @@ const cachelife = 0 // unlimited
 
 const decodeString = string => {
   const dom = new DOMParser().parseFromString(
-    //`<!doctype html><body>${string}</body>`,
     `<body>${string}</body>`,
     'text/html'
   )
-  console.log(dom.documentElement.firstChild.nodeValue)
   return dom.documentElement.firstChild.nodeValue
 }
 
@@ -32,6 +30,8 @@ module.exports = (app, checkJwt, checkScopes) => {
     })
     const handlePostMod = async (p, cats) => {
       p = await postMod.getFeatureSrc(p, wp)
+
+      // categories
       //p = postMod.matchCategories(p, cats)
       let catNames = []
       catNames = p.categories.map(c => {
@@ -49,6 +49,7 @@ module.exports = (app, checkJwt, checkScopes) => {
         return result
       })
       p.categories = catNames
+
       p = await postMod.modFigure(p)
       //p = await postMod.imgToFigure(p)
       p = await postMod.handleNoFeature(p)
@@ -103,6 +104,30 @@ module.exports = (app, checkJwt, checkScopes) => {
         res.json(post)
       } catch (e) {
         res.status(404).send('error from wordpress')
+      }
+    })
+    app.get('/categories', cache.cache(cachelife), async (req, res) => {
+      try {
+        let cats = await wp.categories().perPage(100)
+        let parents = []
+        let subs = []
+        cats.forEach(c => {
+          let result = {
+            name: decodeString(c.name),
+            id: c.id,
+            parent: c.parent
+          }
+          if (c.parent === 0) parents.push(result)
+          else subs.push(result)
+        })
+        parents.forEach(p => {
+          p.children = subs.filter(s => s.parent === p.id).map(s => s.name)
+          delete p.id
+          delete p.parent
+        })
+        res.json(parents)
+      } catch (e) {
+        res.status(404).send('error from wordpress', e)
       }
     })
     /*

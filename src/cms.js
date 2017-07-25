@@ -19,16 +19,6 @@ module.exports = (app, checkJwt, checkScopes) => {
       password: cmsApiPassword,
       auth: true
     })
-    const handlePostMod = async p => {
-      p = await postMod.getFeatureSrc(p, wp)
-      p = await postMod.modFigure(p)
-      //p = await postMod.imgToFigure(p)
-      p = await postMod.handleNoFeature(p)
-      p = await postMod.removeRepeatImage(p)
-      p = await postMod.removeExcerptImage(p)
-      p = await postMod.removeExcerptMarkup(p)
-      return p
-    }
     app.get('/posts', cache.cache(cachelife), async (req, res) => {
       let page = req.query.page
       try {
@@ -48,6 +38,35 @@ module.exports = (app, checkJwt, checkScopes) => {
           posts.unshift(feature)
         }
 
+        // TODO categories are capped here at 100
+        let cats = await wp.categories().perPage(100)
+        const handlePostMod = async p => {
+          p = await postMod.getFeatureSrc(p, wp)
+          //p = postMod.matchCategories(p, cats)
+          let catNames = []
+          catNames = p.categories.map(c => {
+            let result = []
+            result = cats.filter(cat => {
+              let result = cat.id === c
+              return result
+            })
+            if (result.length > 0)
+              result = {
+                name: result[0].name,
+                isBase: result[0].parent !== 0 ? true : false
+              }
+            else result = 'Uncategorized'
+            return result
+          })
+          p.categories = catNames
+          p = await postMod.modFigure(p)
+          //p = await postMod.imgToFigure(p)
+          p = await postMod.handleNoFeature(p)
+          p = await postMod.removeRepeatImage(p)
+          p = await postMod.removeExcerptImage(p)
+          p = await postMod.removeExcerptMarkup(p)
+          return p
+        }
         posts = await Promise.all(posts.map(handlePostMod))
 
         res.json(posts)

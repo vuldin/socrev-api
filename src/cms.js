@@ -3,12 +3,23 @@ const request = require('superagent')
 const { JSDOM } = require('jsdom')
 const CircularJSON = require('circular-json')
 const parse5 = require('parse5')
+const DOMParser = require('xmldom').DOMParser
 const constants = require('./constants')
 const cache = require('./cache')
 const postMod = require('./postMod')
 
 const { cmsApiUrl, cmsApiUser, cmsApiPassword } = constants
 const cachelife = 0 // unlimited
+
+const decodeString = string => {
+  const dom = new DOMParser().parseFromString(
+    //`<!doctype html><body>${string}</body>`,
+    `<body>${string}</body>`,
+    'text/html'
+  )
+  console.log(dom.documentElement.firstChild.nodeValue)
+  return dom.documentElement.firstChild.nodeValue
+}
 
 module.exports = (app, checkJwt, checkScopes) => {
   // allow self-signed certificate on wordpress site
@@ -31,7 +42,7 @@ module.exports = (app, checkJwt, checkScopes) => {
         })
         if (result.length > 0)
           result = {
-            name: result[0].name,
+            name: decodeString(result[0].name),
             isBase: result[0].parent !== 0 ? true : false
           }
         else result = 'Uncategorized'

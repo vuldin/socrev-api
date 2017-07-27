@@ -1,52 +1,44 @@
 const mcache = require('memory-cache')
 
-let pageKeys = []
-
 module.exports = {
+  put: (str, obj) => {
+    return mcache.put(str, obj)
+  },
+  get: str => {
+    return mcache.get(str)
+  },
   cache: duration => {
     return (req, res, next) => {
       let url = req.url
-      let originalUrl = req.originalUrl
-      let slug = req.params.slug
-      let allowSet = true
-      let key = '__express__' + originalUrl || url
-      //if (url.match(/\/posts\/[a-z-0-9]*$/g)) {
-      if (url.match(/\/posts\/[a-z0-9]+([-.]?[a-z0-9])*/g)) {
-        // TODO test new slug regex http://regexr.com/
-        // this new regex may not be correct if it must match both /posts and /posts/slug
-        allowSet = false
-        key = '__express__/posts'
-      }
-      if (url === '/posts') {
-        // change key for /posts to /posts?page=1
-        key = '__express__/posts?page=1'
-      }
-      if (key.includes('__express__/posts?page=')) {
-        // is page request, add key to pageKeys
-        pageKeys.push(key)
-      }
-      let cachedBody = []
-      if (key === '__express__/posts') {
-        pageKeys.forEach(k => (cachedBody = cachedBody.concat(mcache.get(k))))
-      } else cachedBody = mcache.get(key)
-      if (cachedBody) {
+      if (url.includes('posts')) {
+        const key = 'posts'
+        const slug = req.params.slug
+        const page = parseInt(req.query.page)
+        let result = mcache.get('posts')
         if (slug) {
-          const post = cachedBody.find(d => d.slug === slug)
-          if (post) res.json(post)
-          else next()
-        } else res.json(cachedBody)
-        return
-      } else {
-        if (allowSet) {
-          res.sendResponse = res.json
-          res.json = body => {
-            if (duration) mcache.put(key, body, duration)
-            else mcache.put(key, body)
-            res.sendResponse(body)
+          result = result.find(d => d.slug === slug)
+          //if (result) console.log(`cached post ${result.slug}`)
+        } else {
+          //console.log(`cached posts length: ${result.length}`)
+          if (page) {
+            //console.log(`page ${page}`)
+            if (page === 1) {
+              result = result.slice(0, 0 + 13)
+            } else {
+              const offset = 13 + 12 * (page - 2)
+              result = result.slice(offset, offset + 12)
+            }
           }
         }
-        next()
+        result = result.slice(0, 100) // limit return to 100 posts
+        res.json(result)
       }
+      if (url.includes('categories')) {
+        const cats = mcache.get('cats')
+        //console.log(`cached categories ${cats.length}`)
+        res.json(cats)
+      }
+      return next()
     }
   },
   clear: () => mcache.clear()

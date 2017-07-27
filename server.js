@@ -10,6 +10,9 @@ const morgan = require('morgan')
 //const mediaModule = require('./src/media')
 const cmsModule = require('./src/cms')
 const constants = require('./src/constants')
+const primer = require('./src/primer')
+
+//require('appmetrics-dash').monitor()
 
 const { authAudience, authName, defaultPort } = constants
 const port = process.env.PORT || defaultPort
@@ -17,6 +20,15 @@ const port = process.env.PORT || defaultPort
 process.on('unhandledRejection', (reason, p) => {
   console.log('unhandled rejection at:', p)
   console.log('reason:', reason)
+})
+
+primer.prime().then(() => {
+  setInterval(async () => {
+    console.log('start refresh loop now')
+    await primer.refresh()
+    console.log('refresh loop COMPLETE')
+  }, 1000 * 60 * 20)
+  //}, 1000 * 15)
 })
 
 app.use(cors())

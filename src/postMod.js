@@ -1,4 +1,5 @@
 const parse5 = require('parse5')
+//const CircularJSON = require('circular-json')
 
 const figure = url => {
   //let result = `<figure style="background: url(${url})"/>`
@@ -18,14 +19,37 @@ module.exports = {
     }
     return post
   },
+  modCategories: (p, cats) => {
+    return new Promise((resolve, reject) => {
+      let catNames = []
+      catNames = p.categories.map(c => {
+        let result = []
+        result = cats.filter(cat => cat.id === c)
+        if (result.length === 0)
+          result = {
+            name: 'Uncategorized',
+            id: 1,
+            parent: 0
+          }
+        return result[0]
+      })
+      p.categories = catNames
+      resolve(p)
+    })
+  },
   modFigure: async post => {
     // replace figures with normalized figure
     const node = parse5.parseFragment(post.content.rendered)
     const loop = node => {
       let handled = false
       if (node.nodeName === 'figure') {
+        //console.log(CircularJSON.stringify(node))
         handled = true
-        const imgNode = node.childNodes.find(d => d.nodeName === 'img')
+        let imgNode = node.childNodes.find(d => d.nodeName === 'img')
+        if (imgNode === undefined) {
+          const a = node.childNodes.find(d => d.nodeName === 'a')
+          imgNode = a.childNodes.find(d => d.nodeName === 'img')
+        }
         const url = imgNode.attrs.find(a => a.name == 'src').value
         return parse5.parseFragment(figure(url)).childNodes[0]
       }
@@ -135,11 +159,17 @@ module.exports = {
       }
       if (node.nodeName === 'img' && node.parentNode.nodeName !== 'figure') {
         handled = true
-        const url = node.attrs.find(a => a.name == 'src').value
-        let result
-        if (url === post.featured_media.source_url) {
+        //const url = node.attrs.find(a => a.name == 'src').value
+        let result = node
+        const src = node.attrs.find(a => a.name == 'src')
+        if (src === undefined) {
           result = '<span/>'
-        } else result = node
+        } else {
+          let url = src.value
+          if (url === post.featured_media.source_url) {
+            result = '<span/>'
+          }
+        }
         return result
       }
       if (node.childNodes !== undefined && node.childNodes.length > 0) {

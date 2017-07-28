@@ -22,13 +22,16 @@ process.on('unhandledRejection', (reason, p) => {
   console.log('reason:', reason)
 })
 
+// TODO change during testing
+//const refreshTimer = 1000 * 15
+const refreshTimer = 1000 * 60 * 20
+
 primer.prime().then(() => {
   setInterval(async () => {
     console.log('start refresh loop now')
     await primer.refresh()
     console.log('refresh loop COMPLETE')
-  }, 1000 * 60 * 20)
-  //}, 1000 * 15)
+  }, refreshTimer)
 })
 
 app.use(cors())

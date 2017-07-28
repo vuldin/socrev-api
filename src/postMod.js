@@ -1,10 +1,18 @@
 const parse5 = require('parse5')
 //const CircularJSON = require('circular-json')
+const DOMParser = require('xmldom').DOMParser
 
 const figure = url => {
   //let result = `<figure style="background: url(${url})"/>`
   let result = `<figure><img src="${url}"/></figure>`
   return result
+}
+const decodeString = string => {
+  const dom = new DOMParser().parseFromString(
+    `<body>${string}</body>`,
+    'text/html'
+  )
+  return dom.documentElement.firstChild.nodeValue
 }
 
 module.exports = {
@@ -21,19 +29,26 @@ module.exports = {
   },
   modCategories: (p, cats) => {
     return new Promise((resolve, reject) => {
-      let catNames = []
-      catNames = p.categories.map(c => {
-        let result = []
-        result = cats.filter(cat => cat.id === c)
-        if (result.length === 0)
-          result = {
-            name: 'Uncategorized',
-            id: 1,
-            parent: 0
-          }
-        return result[0]
+      let matchingCats = []
+      p.categories.forEach(catId => {
+        const match = cats.find(c => c.id === catId)
+        //if(match.length > 0) match = match[0]
+        const parent = cats.find(c => c.id === match.parent)
+        //if(parent.length > 0) parent = parent[0]
+        if (match !== undefined) matchingCats.push(match)
+        if (parent !== undefined) {
+          const existingParent = matchingCats.find(c => c.id === parent.id)
+          if (existingParent === undefined) matchingCats.push(parent)
+        }
       })
-      p.categories = catNames
+      matchingCats = matchingCats.map(c => {
+        return {
+          name: decodeString(c.name),
+          id: c.id,
+          parent: c.parent
+        }
+      })
+      p.categories = matchingCats
       resolve(p)
     })
   },

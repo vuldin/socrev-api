@@ -48,9 +48,11 @@ const handleCategories = async wp => {
   parents.filter(p => p.name !== 'Uncategorized').forEach(p => {
     p.children = subs.filter(s => s.parent === p.id)
     const idstr = `${p.id}: `.padEnd(5)
+    //console.log(`${idstr}${p.count ? p.count.padEnd(3) : ''} ${p.name}`)
     console.log(`${idstr}${p.name}`)
     p.children.forEach(c => {
       const cidstr = `  ${c.id}: `.padEnd(7)
+      //console.log(`${cidstr}${c.count ? c.count.padEnd(3) : ''} ${c.name}`)
       console.log(`${cidstr}${c.name}`)
     })
   })
@@ -70,48 +72,6 @@ module.exports = {
         })
 
         let cats = await handleCategories(wp)
-        /*
-        const handlePostMod = async (p, cats) => {
-          p = await postMod.getFeatureSrc(p, wp)
-          p = await postMod.modCategories(p, cats)
-          p = await postMod.modFigure(p)
-          //p = await postMod.imgToFigure(p)
-          p = await postMod.handleNoFeature(p)
-          p = await postMod.removeRepeatImage(p)
-          p = await postMod.removeExcerptImage(p)
-          p = await postMod.removeExcerptMarkup(p)
-          const idstr = `  ${p.id}: `.padEnd(8)
-          console.log(`${idstr}${p.slug}`)
-          return p
-        }
-
-        // categories
-        let cats = await wp.categories().perPage(100)
-        let parents = []
-        let subs = []
-        cats.forEach(c => {
-          let result = {
-            name: decodeString(c.name),
-            id: c.id,
-            parent: c.parent
-          }
-          if (c.parent === 0) {
-            //console.log(`${c.name}`)
-            parents.push(result)
-          } else subs.push(result)
-        })
-        parents.filter(p => p.name !== 'Uncategorized').forEach(p => {
-          p.children = subs.filter(s => s.parent === p.id)
-          const idstr = `${p.id}: `.padEnd(5)
-          console.log(`${idstr}${p.name}`)
-          p.children.forEach(c => {
-            const cidstr = `  ${c.id}: `.padEnd(7)
-            console.log(`${cidstr}${c.name}`)
-          })
-        })
-        //cache.primeCats(parents)
-        cache.put('cats', parents)
-        */
 
         let reqCount = 0
         let allPosts = []
@@ -131,7 +91,8 @@ module.exports = {
             )
             allPosts = allPosts.concat(posts)
 
-            //if (reqCount < 1) {
+            // TODO limit how many posts are retrieved
+            //if (reqCount < 10) {
             if (response._paging && response._paging.next) {
               //console.log('looping getAll')
               await getAll(response._paging.next)
@@ -142,8 +103,8 @@ module.exports = {
           })
         }
         await getAll(wp.posts())
+        // TODO test how the last pages are handled
         //await getAll(wp.posts().page(169))
-        //cache.primePosts(allPosts)
         cache.put('posts', allPosts)
         /*
         //let post = await wp.posts().id(2653)
@@ -164,7 +125,9 @@ module.exports = {
       auth: true
     })
     let moreMods = true
+
     let cats = await handleCategories(wp)
+    //let cats = cache.get('cats')
 
     const handlePostRefresh = async page => {
       console.log('getting modified posts')
@@ -198,8 +161,12 @@ module.exports = {
             console.log(`    NOT UPDATED`)
           }
         } else {
-          //moreMods = false
           console.log(`    NOT FOUND`)
+          // TODO when running locally and/or limiting collection of posts
+          // from wordpress, set moreMods to false so that posts which
+          // aren't found in cache won't continually trigger cache update
+
+          //moreMods = false
           didUpdate = true
           p = await handlePostMod(wp, p, cats)
           cachedPosts[cPostIndex] = p
@@ -208,6 +175,31 @@ module.exports = {
       if (didUpdate) {
         console.log('updating cache')
         cache.put('posts', cachedPosts)
+
+        /*
+        const updateCategory = async cat => {
+          cat.count = cachedPosts.filter(p => {
+            let result =
+              p.categories.filter(c => c.name === cat.name).length > 0
+            return result
+          })
+          const catPostsRes = await wp.posts().categories(cat.id)
+          console.log(catPostsRes)
+          cat.count = catPostsRes._paging.total
+          if (cat.children) {
+            const newChildren = cats.map(c => {
+              return updateCategory(c)
+            })
+            cat.children = newChildren
+          }
+          console.log(`${cat.id}: ${cat.count} ${cat.name}`)
+          return cat
+        }
+        const newCats = cats.map(c => {
+          return updateCategory(c)
+        })
+        cache.put('cats', newCats)
+        */
       } else console.log('no updates')
     }
     for (let i = 1; moreMods; i++) {

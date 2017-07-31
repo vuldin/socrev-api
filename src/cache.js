@@ -15,6 +15,7 @@ module.exports = {
         const slug = req.params.slug
         const page = parseInt(req.query.page)
         const cat = parseInt(req.query.category)
+        const status = req.query.status
         const isCount = req.query.count === 'true'
         let result = mcache.get('posts')
         let left = result.length
@@ -31,8 +32,13 @@ module.exports = {
                 isOfCategory = true
               return isOfCategory
             })
-            left = result.length
+            //left = result.length
           }
+          if (status) {
+            result = result.filter(d => d.status === status)
+            //left = result.length
+          }
+          left = result.length
           if (page) {
             //console.log(`page ${page}`)
             // requests without a category are for the front page

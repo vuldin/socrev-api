@@ -92,8 +92,8 @@ module.exports = {
             allPosts = allPosts.concat(posts)
 
             // TODO limit how many posts are retrieved
-            //if (reqCount < 10) {
             if (response._paging && response._paging.next) {
+              //if (reqCount < 10 && response._paging && response._paging.next) {
               //console.log('looping getAll')
               await getAll(response._paging.next)
             } else {
@@ -102,6 +102,10 @@ module.exports = {
             }
           })
         }
+        //await getAll(wp.posts())
+        //await getAll(wp.posts().status(['draft', 'future']))
+        await getAll(wp.posts().status('draft'))
+        await getAll(wp.posts().status('future'))
         await getAll(wp.posts())
         // TODO test how the last pages are handled
         //await getAll(wp.posts().page(169))
@@ -133,6 +137,7 @@ module.exports = {
       console.log('getting modified posts')
       const modPosts = await wp
         .posts()
+        .status(['draft', 'future', 'publish'])
         .orderby('modified')
         .page(page)
         .perPage(1)
@@ -166,10 +171,12 @@ module.exports = {
           // from wordpress, set moreMods to false so that posts which
           // aren't found in cache won't continually trigger cache update
 
-          //moreMods = false
+          moreMods = false
+          /*
           didUpdate = true
           p = await handlePostMod(wp, p, cats)
           cachedPosts[cPostIndex] = p
+          */
         }
       }
       if (didUpdate) {

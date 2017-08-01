@@ -1,11 +1,14 @@
 const parse5 = require('parse5')
-//const CircularJSON = require('circular-json')
+const CircularJSON = require('circular-json')
 const DOMParser = require('xmldom').DOMParser
 
 const figure = url => {
   //let result = `<figure style="background: url(${url})"/>`
   let result = `<figure><img src="${url}"/></figure>`
   return result
+}
+const heading = text => {
+  return `<h4>${text}</h4>`
 }
 const decodeString = string => {
   const dom = new DOMParser().parseFromString(
@@ -45,12 +48,41 @@ module.exports = {
         return {
           name: decodeString(c.name),
           id: c.id,
-          parent: c.parent
+          parent: c.parent,
+          slug: c.slug
         }
       })
       p.categories = matchingCats
       resolve(p)
     })
+  },
+  modHeading: async post => {
+    // replace h* with h4
+    /*
+    const node = parse5.parseFragment(post.content.rendered)
+    const loop = node => {
+      let handled = false
+      if (node.nodeName[0] === 'h' && node.nodeName.length === 2) {
+        //console.log(CircularJSON.stringify(node))
+        handled = true
+        let imgNode = node.childNodes.find(d => d.nodeName === 'img')
+        if (imgNode === undefined) {
+          const a = node.childNodes.find(d => d.nodeName === 'a')
+          imgNode = a.childNodes.find(d => d.nodeName === 'img')
+        }
+        const url = imgNode.attrs.find(a => a.name == 'src').value
+        return parse5.parseFragment(figure(url)).childNodes[0]
+      }
+      if (node.childNodes !== undefined && node.childNodes.length > 0) {
+        node.childNodes = node.childNodes.map(loop).filter(d => d !== undefined)
+      }
+      if (!handled) {
+        // neither figure nor img, return as-is
+        return node
+      }
+    }
+    */
+    return post
   },
   modFigure: async post => {
     // replace figures with normalized figure

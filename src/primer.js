@@ -19,6 +19,7 @@ const decodeString = string => {
 const handlePostMod = async (wp, p, cats) => {
   p = await postMod.getFeatureSrc(p, wp)
   p = await postMod.modCategories(p, cats)
+  //p = await postMod.modHeading(p)
   p = await postMod.modFigure(p)
   //p = await postMod.imgToFigure(p)
   p = await postMod.handleNoFeature(p)
@@ -38,7 +39,8 @@ const handleCategories = async wp => {
     let result = {
       name: decodeString(c.name),
       id: c.id,
-      parent: c.parent
+      parent: c.parent,
+      slug: c.slug
     }
     if (c.parent === 0) {
       //console.log(`${c.name}`)
@@ -93,7 +95,7 @@ module.exports = {
 
             // TODO limit how many posts are retrieved
             if (response._paging && response._paging.next) {
-              //if (reqCount < 10 && response._paging && response._paging.next) {
+              //if (reqCount < 5 && response._paging && response._paging.next) {
               //console.log('looping getAll')
               await getAll(response._paging.next)
             } else {
@@ -107,7 +109,7 @@ module.exports = {
         await getAll(wp.posts().status('draft'))
         await getAll(wp.posts().status('future'))
         await getAll(wp.posts())
-        // TODO test how the last pages are handled
+        // test how the last pages are handled
         //await getAll(wp.posts().page(169))
         cache.put('posts', allPosts)
         /*

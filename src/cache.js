@@ -14,7 +14,7 @@ module.exports = {
         const key = 'posts'
         const slug = req.params.slug
         const page = parseInt(req.query.page)
-        const cat = parseInt(req.query.category)
+        const cat = req.query.category
         const status = req.query.status
         const isCount = req.query.count === 'true'
         let result = mcache.get('posts')
@@ -28,7 +28,7 @@ module.exports = {
           if (cat) {
             result = result.filter(d => {
               let isOfCategory = false
-              if (d.categories.find(c => c.id === cat) !== undefined)
+              if (d.categories.find(c => c.slug === cat) !== undefined)
                 isOfCategory = true
               return isOfCategory
             })

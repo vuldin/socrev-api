@@ -104,7 +104,6 @@ module.exports = {
             }
           })
         }
-        //await getAll(wp.posts())
         //await getAll(wp.posts().status(['draft', 'future']))
         await getAll(wp.posts().status('draft'))
         await getAll(wp.posts().status('future'))
@@ -156,6 +155,7 @@ module.exports = {
         console.log(`${idstr}${p.modified} ${p.slug}`)
         const cPostIndex = cachedPosts.findIndex(cPost => cPost.id === p.id)
         if (cPostIndex > -1) {
+          // if post is in cache
           let cPost = cachedPosts[cPostIndex]
           let cachedDate = moment(cPost.modified, datePattern)
           if (modDate.isAfter(cachedDate)) {
@@ -168,23 +168,16 @@ module.exports = {
             console.log(`    NOT UPDATED`)
           }
         } else {
+          // is new post
           console.log(`    NOT FOUND`)
-          // TODO when running locally and/or limiting collection of posts
-          // from wordpress, set moreMods to false so that posts which
-          // aren't found in cache won't continually trigger cache update
-
-          moreMods = false
-          /*
           didUpdate = true
           p = await handlePostMod(wp, p, cats)
-          cachedPosts[cPostIndex] = p
-          */
+          cachedPosts.unshift(p)
         }
       }
       if (didUpdate) {
         console.log('updating cache')
         cache.put('posts', cachedPosts)
-
         /*
         const updateCategory = async cat => {
           cat.count = cachedPosts.filter(p => {

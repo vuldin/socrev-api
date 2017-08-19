@@ -24,7 +24,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 // TODO change during testing
 //const refreshTimer = 1000 * 15
-const refreshTimer = 1000 * 60 * 20
+const refreshTimer = 1000 * 60 * 5
 
 primer.prime().then(() => {
   setInterval(async () => {

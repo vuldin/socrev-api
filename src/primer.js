@@ -40,7 +40,7 @@ const handleCategories = async wp => {
       name: decodeString(c.name),
       id: c.id,
       parent: c.parent,
-      slug: c.slug
+      slug: c.slug,
     }
     if (c.parent === 0) {
       //console.log(`${c.name}`)
@@ -70,7 +70,7 @@ module.exports = {
         wp.auth({
           username: cmsApiUser,
           password: cmsApiPassword,
-          auth: true
+          auth: true,
         })
 
         let cats = await handleCategories(wp)
@@ -104,13 +104,22 @@ module.exports = {
             }
           })
         }
-        //await getAll(wp.posts().status(['draft', 'future']))
         await getAll(wp.posts().status('draft'))
         await getAll(wp.posts().status('future'))
         await getAll(wp.posts())
-        // test how the last pages are handled
-        //await getAll(wp.posts().page(169))
+
+        //await getAll(wp.posts().page(169)) // test how the last pages are handled
+
         cache.put('posts', allPosts)
+
+        /*
+        const fs = require('fs')
+        fs.writeFile('posts.json', JSON.stringify(allPosts), 'utf8', err => {
+          if (err) throw err
+          console.log('posts.json written')
+        })
+        */
+
         /*
         //let post = await wp.posts().id(2653)
         //let post = await wp.posts().id(1980)
@@ -127,7 +136,7 @@ module.exports = {
     wp.auth({
       username: cmsApiUser,
       password: cmsApiPassword,
-      auth: true
+      auth: true,
     })
     let moreMods = true
 
@@ -207,5 +216,5 @@ module.exports = {
     for (let i = 1; moreMods; i++) {
       await handlePostRefresh(i)
     }
-  }
+  },
 }

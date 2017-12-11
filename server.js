@@ -23,8 +23,8 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 // TODO change during testing
-//const refreshTimer = 1000 * 15
-const refreshTimer = 1000 * 60 * 5
+// const refreshTimer = 1000 * 15 // every 15 seconds
+const refreshTimer = 1000 * 60 * 5 // every 5 minutes
 
 primer.prime().then(() => {
   setInterval(async () => {
@@ -47,11 +47,11 @@ const checkJwt = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: `https://${authName}.auth0.com/.well-known/jwks.json`
+    jwksUri: `https://${authName}.auth0.com/.well-known/jwks.json`,
   }),
   audience: authAudience,
   issuer: `https://${authName}.auth0.com/`,
-  algorithms: ['RS256']
+  algorithms: ['RS256'],
 })
 
 // TODO handle passing in scope as argument on input methods below

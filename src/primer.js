@@ -118,6 +118,10 @@ module.exports = {
           if (err) throw err
           console.log('posts.json written')
         })
+        fs.writeFile('cats.json', JSON.stringify(cats), 'utf8', err => {
+          if (err) throw err
+          console.log('cats.json written')
+        })
         */
 
         /*

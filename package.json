@@ -1,21 +1,11 @@
 {
   "name": "socrev-api",
-  "version": "1.0.0",
-  "description": "Provide API for socialistrevolution.org",
+  "description": "Provide API functionality",
   "private": true,
   "scripts": {
     "start": "node index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@gitlab.com/marxist/socrev-api.git"
-  },
-  "author": "Joshua Purcell <joshua.purcell@gmail.com>",
   "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/marxist/socrev-api/issues"
-  },
-  "homepage": "https://gitlab.com/marxist/socrev-api#README",
   "dependencies": {
     "cors": "^2.8.3",
     "dotenv": "^4.0.0",

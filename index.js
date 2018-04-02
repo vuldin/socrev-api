@@ -23,7 +23,7 @@ socket.on('connect', () => {
     console.log('emitting to init...')
     socket.emit('init', 'msg from api', data => {
       console.log('initial records received from dbCtrl')
-      posts = data.posts
+      posts = data.posts.filter(d => d.status === 'publish')
       cats = data.cats
 
       app.get('/posts', cache())
@@ -43,9 +43,10 @@ const cache = duration => {
     if (url.includes('posts')) {
       //const key = 'posts'
       const slug = req.params.slug
-      const page = parseInt(req.query.page)
+      const page = req.query.page !== undefined ? parseInt(req.query.page) : 1
       const cat = req.query.category
-      const status = req.query.status
+      const status =
+        req.query.status !== undefined ? req.query.status : 'publish'
       const isCount = req.query.count === 'true'
       //let result = mcache.get('posts')
       let result = posts
